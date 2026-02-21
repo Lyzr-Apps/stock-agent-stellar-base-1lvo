@@ -1,0 +1,50 @@
+{
+  "agent_name": "Portfolio Analysis Manager",
+  "agent_id": "6999be50a8fd90224a4a0be2",
+  "description": "Coordinates the research and email delivery workflow. Receives stock list, routes to Research Agent, collects findings, passes to Email Agent, confirms delivery.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "analysis_date": "string",
+    "stocks_analyzed": [
+      {
+        "ticker": "string",
+        "company_name": "string",
+        "current_price": "string",
+        "daily_change": "string",
+        "weekly_change": "string",
+        "key_news": [
+          "string"
+        ],
+        "analyst_sentiment": "string",
+        "notable_events": "string",
+        "summary": "string"
+      }
+    ],
+    "email_sent": "boolean",
+    "recipient": "string",
+    "overall_summary": "string"
+  },
+  "example_response": {
+    "analysis_date": "sample string",
+    "stocks_analyzed": [
+      {
+        "ticker": "sample string",
+        "company_name": "sample string",
+        "current_price": "sample string",
+        "daily_change": "sample string",
+        "weekly_change": "sample string",
+        "key_news": [
+          "sample string"
+        ],
+        "analyst_sentiment": "sample string",
+        "notable_events": "sample string",
+        "summary": "sample string"
+      }
+    ],
+    "email_sent": false,
+    "recipient": "sample string",
+    "overall_summary": "sample string"
+  }
+}

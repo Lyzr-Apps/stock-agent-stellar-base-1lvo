@@ -1,0 +1,25 @@
+{
+  "agents": {
+    "portfolio_analysis_manager": {
+      "id": "6999be50a8fd90224a4a0be2",
+      "name": "Portfolio Analysis Manager",
+      "type": "manager"
+    },
+    "stock_research_agent": {
+      "id": "6999be3155533a893b08f90c",
+      "name": "Stock Research Agent",
+      "type": "sub-agent"
+    },
+    "email_composer_agent": {
+      "id": "6999be4055533a893b08f913",
+      "name": "Email Composer Agent",
+      "type": "sub-agent"
+    }
+  },
+  "schedule": {
+    "schedule_id": "6999be56399dfadeac37f243",
+    "agent_id": "6999be50a8fd90224a4a0be2",
+    "cron_expression": "0 8 * * *",
+    "timezone": "America/New_York"
+  }
+}
