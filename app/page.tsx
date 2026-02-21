@@ -55,66 +55,116 @@ interface SavedReport {
 }
 
 interface AppSettings {
-  tickers: string[]
+  stocks: string[]
+  forex: string[]
+  commodities: string[]
   email: string
 }
 
+// Legacy settings for migration
+interface LegacySettings {
+  tickers?: string[]
+  email?: string
+}
+
 // ---------------------------------------------------------------------------
-// Sample Data
+// Asset Category Detection
+// ---------------------------------------------------------------------------
+
+function getAssetCategory(ticker: string): 'stock' | 'forex' | 'commodity' {
+  if (ticker.includes('/')) return 'forex'
+  const commodities = ['GOLD', 'SILVER', 'OIL', 'WTI', 'BRENT', 'XAU', 'XAG', 'NATURAL_GAS', 'NATGAS', 'COPPER', 'PLATINUM', 'PALLADIUM']
+  if (commodities.includes(ticker.toUpperCase())) return 'commodity'
+  return 'stock'
+}
+
+function getCategoryColor(category: 'stock' | 'forex' | 'commodity'): string {
+  switch (category) {
+    case 'stock': return '#3b82f6'
+    case 'forex': return '#10b981'
+    case 'commodity': return '#f59e0b'
+  }
+}
+
+function getCategoryLabel(category: 'stock' | 'forex' | 'commodity'): string {
+  switch (category) {
+    case 'stock': return 'Stock'
+    case 'forex': return 'Forex'
+    case 'commodity': return 'Commodity'
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sample Data (2026 dates, multi-asset)
 // ---------------------------------------------------------------------------
 
 const SAMPLE_RESULT: AnalysisResult = {
-  analysis_date: '2025-01-15',
+  analysis_date: '2026-02-21',
   stocks_analyzed: [
     {
       ticker: 'AAPL',
       company_name: 'Apple Inc.',
-      current_price: '$198.45',
-      daily_change: '+1.23%',
-      weekly_change: '+3.87%',
+      current_price: '$242.80',
+      daily_change: '+1.45%',
+      weekly_change: '+3.20%',
       key_news: [
-        'Apple Vision Pro pre-orders exceed expectations',
-        'Services revenue hits new quarterly record at $23.1B',
-        'New M4 chip lineup announced for MacBook Pro refresh',
+        'Apple Vision Pro 2 launch drives strong pre-order demand worldwide',
+        'Services revenue reaches record $28.4B in latest quarterly report',
+        'M5 chip architecture leaks suggest major performance improvements',
       ],
       analyst_sentiment: 'Bullish',
-      notable_events: 'Q1 2025 earnings report on January 30',
-      summary: 'Apple continues to show strong momentum across hardware and services segments. The Vision Pro launch is generating significant consumer interest, while the services business maintains its growth trajectory.',
-    },
-    {
-      ticker: 'MSFT',
-      company_name: 'Microsoft Corp.',
-      current_price: '$415.20',
-      daily_change: '+0.85%',
-      weekly_change: '+2.14%',
-      key_news: [
-        'Azure cloud revenue growth accelerates to 31% YoY',
-        'Copilot AI integration drives Office 365 upgrades',
-        'Strategic partnership with OpenAI expanded',
-      ],
-      analyst_sentiment: 'Bullish',
-      notable_events: 'AI developer conference scheduled for February',
-      summary: 'Microsoft remains a dominant force in enterprise cloud and AI. Azure growth reacceleration and Copilot adoption signal strong demand for AI-powered enterprise solutions.',
+      notable_events: 'Q1 2026 earnings report on February 28',
+      summary: 'Apple continues to demonstrate strong momentum across hardware and services. The Vision Pro 2 launch is generating significant consumer interest, while the services business maintains its exceptional growth trajectory with record revenue.',
     },
     {
       ticker: 'TSLA',
       company_name: 'Tesla Inc.',
-      current_price: '$245.80',
-      daily_change: '-0.42%',
-      weekly_change: '-1.65%',
+      current_price: '$385.50',
+      daily_change: '-0.72%',
+      weekly_change: '+5.14%',
       key_news: [
-        'Cybertruck deliveries ramp to 5,000 units per week',
-        'Price cuts in China to maintain market share',
-        'FSD v13 rollout begins in select markets',
+        'Model 2 compact vehicle enters mass production at Gigafactory Texas',
+        'Robotaxi service launches in Austin and Miami markets',
+        'Energy storage division revenue surges 62% year-over-year',
       ],
       analyst_sentiment: 'Neutral',
-      notable_events: 'Annual shareholder meeting in March',
-      summary: 'Tesla faces mixed signals with Cybertruck production gains offset by competitive pricing pressure in China. The FSD rollout could be a significant catalyst if adoption accelerates.',
+      notable_events: 'FSD v15 wide release expected in March 2026',
+      summary: 'Tesla presents a mixed picture with the Model 2 ramp showing promise offset by margin compression in core auto business. The robotaxi launch and energy storage growth represent significant long-term catalysts.',
+    },
+    {
+      ticker: 'EUR/USD',
+      company_name: 'Euro / US Dollar',
+      current_price: '1.0892',
+      daily_change: '+0.18%',
+      weekly_change: '-0.45%',
+      key_news: [
+        'ECB signals potential rate pause at March meeting amid mixed data',
+        'US Dollar strengthens on better-than-expected jobs report',
+        'Eurozone manufacturing PMI contracts for second consecutive month',
+      ],
+      analyst_sentiment: 'Bearish',
+      notable_events: 'ECB rate decision scheduled for March 6, 2026',
+      summary: 'EUR/USD faces downward pressure as diverging monetary policy expectations between the ECB and Fed weigh on the pair. Weak Eurozone manufacturing data contrasts with resilient US employment figures, suggesting further dollar strength near-term.',
+    },
+    {
+      ticker: 'GOLD',
+      company_name: 'Gold (XAU/USD)',
+      current_price: '$2,945.30',
+      daily_change: '+0.85%',
+      weekly_change: '+2.10%',
+      key_news: [
+        'Central bank gold purchases reach record levels in Q1 2026',
+        'Geopolitical tensions in Eastern Europe drive safe-haven demand',
+        'Gold ETF inflows surge to highest level since 2020',
+      ],
+      analyst_sentiment: 'Bullish',
+      notable_events: 'US CPI release on February 25 may impact gold trajectory',
+      summary: 'Gold continues its bullish run toward the psychological $3,000 level, driven by strong central bank demand and geopolitical uncertainty. Record ETF inflows suggest broad institutional participation in the rally.',
     },
   ],
   email_sent: true,
   recipient: 'investor@example.com',
-  overall_summary: 'The portfolio shows positive momentum overall, with technology sector leaders Apple and Microsoft demonstrating strength in AI and cloud computing. Tesla presents a more cautious outlook amid competitive dynamics. Recommended to maintain current positions with attention to upcoming earnings reports.',
+  overall_summary: 'The portfolio shows mixed signals across asset classes. Equities demonstrate selective strength with Apple outperforming while Tesla consolidates. The forex market signals dollar strength ahead of key economic data releases. Gold remains the standout performer, approaching record highs on strong institutional demand. Recommend maintaining diversified exposure with attention to upcoming central bank decisions and earnings reports.',
 }
 
 const SAMPLE_LOGS: ExecutionLog[] = [
@@ -124,11 +174,11 @@ const SAMPLE_LOGS: ExecutionLog[] = [
     agent_id: MANAGER_AGENT_ID,
     user_id: 'user-1',
     session_id: 'sess-1',
-    executed_at: '2025-01-14T13:00:00Z',
+    executed_at: '2026-02-21T13:00:00Z',
     attempt: 1,
     max_attempts: 3,
     success: true,
-    payload_message: 'Analyze AAPL, MSFT, TSLA',
+    payload_message: 'Analyze AAPL, TSLA, EUR/USD, GOLD',
     response_status: 200,
     response_output: 'Analysis complete',
     error_message: null,
@@ -139,11 +189,11 @@ const SAMPLE_LOGS: ExecutionLog[] = [
     agent_id: MANAGER_AGENT_ID,
     user_id: 'user-1',
     session_id: 'sess-2',
-    executed_at: '2025-01-13T13:00:00Z',
+    executed_at: '2026-02-20T13:00:00Z',
     attempt: 1,
     max_attempts: 3,
     success: true,
-    payload_message: 'Analyze AAPL, MSFT, TSLA',
+    payload_message: 'Analyze AAPL, TSLA, EUR/USD, GOLD',
     response_status: 200,
     response_output: 'Analysis complete',
     error_message: null,
@@ -154,11 +204,11 @@ const SAMPLE_LOGS: ExecutionLog[] = [
     agent_id: MANAGER_AGENT_ID,
     user_id: 'user-1',
     session_id: 'sess-3',
-    executed_at: '2025-01-12T13:00:00Z',
+    executed_at: '2026-02-19T13:00:00Z',
     attempt: 1,
     max_attempts: 3,
     success: false,
-    payload_message: 'Analyze AAPL, MSFT, TSLA',
+    payload_message: 'Analyze AAPL, TSLA, EUR/USD, GOLD',
     response_status: 500,
     response_output: '',
     error_message: 'Timeout',
@@ -174,7 +224,7 @@ function formatInline(text: string) {
   if (parts.length === 1) return text
   return parts.map((part, i) =>
     i % 2 === 1 ? (
-      <strong key={i} className="font-medium">
+      <strong key={i} className="font-semibold text-foreground">
         {part}
       </strong>
     ) : (
@@ -190,37 +240,37 @@ function renderMarkdown(text: string) {
       {text.split('\n').map((line, i) => {
         if (line.startsWith('### '))
           return (
-            <h4 key={i} className="font-medium text-sm mt-3 mb-1 tracking-[0.1em]">
+            <h4 key={i} className="font-semibold text-sm mt-3 mb-1">
               {line.slice(4)}
             </h4>
           )
         if (line.startsWith('## '))
           return (
-            <h3 key={i} className="font-medium text-base mt-3 mb-1 tracking-[0.1em]">
+            <h3 key={i} className="font-semibold text-base mt-3 mb-1">
               {line.slice(3)}
             </h3>
           )
         if (line.startsWith('# '))
           return (
-            <h2 key={i} className="font-medium text-lg mt-4 mb-2 tracking-[0.1em]">
+            <h2 key={i} className="font-bold text-lg mt-4 mb-2">
               {line.slice(2)}
             </h2>
           )
         if (line.startsWith('- ') || line.startsWith('* '))
           return (
-            <li key={i} className="ml-4 list-disc text-sm font-light leading-[1.8]">
+            <li key={i} className="ml-4 list-disc text-sm leading-relaxed text-muted-foreground">
               {formatInline(line.slice(2))}
             </li>
           )
         if (/^\d+\.\s/.test(line))
           return (
-            <li key={i} className="ml-4 list-decimal text-sm font-light leading-[1.8]">
+            <li key={i} className="ml-4 list-decimal text-sm leading-relaxed text-muted-foreground">
               {formatInline(line.replace(/^\d+\.\s/, ''))}
             </li>
           )
         if (!line.trim()) return <div key={i} className="h-1" />
         return (
-          <p key={i} className="text-sm font-light leading-[1.8]">
+          <p key={i} className="text-sm leading-relaxed text-muted-foreground">
             {formatInline(line)}
           </p>
         )
@@ -230,7 +280,7 @@ function renderMarkdown(text: string) {
 }
 
 // ---------------------------------------------------------------------------
-// SVG Icons (inline to avoid external dependencies)
+// SVG Icons
 // ---------------------------------------------------------------------------
 
 function IconActivity({ className }: { className?: string }) {
@@ -417,6 +467,24 @@ function IconCalendar({ className }: { className?: string }) {
   )
 }
 
+function IconGlobe({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>
+  )
+}
+
+function IconDiamond({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z" />
+    </svg>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // ErrorBoundary
 // ---------------------------------------------------------------------------
@@ -437,11 +505,11 @@ class ErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
           <div className="text-center p-8 max-w-md">
-            <h2 className="text-xl font-medium mb-2 tracking-[0.1em]">Something went wrong</h2>
-            <p className="text-muted-foreground mb-4 text-sm font-light">{this.state.error}</p>
+            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+            <p className="text-muted-foreground mb-4 text-sm">{this.state.error}</p>
             <button
               onClick={() => this.setState({ hasError: false, error: '' })}
-              className="px-4 py-2 bg-primary text-primary-foreground text-sm tracking-[0.1em]"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
             >
               Try again
             </button>
@@ -457,11 +525,11 @@ class ErrorBoundary extends React.Component<
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getSentimentStyle(sentiment: string): string {
+function getSentimentColor(sentiment: string): { bg: string; text: string; dot: string } {
   const s = (sentiment ?? '').toLowerCase()
-  if (s.includes('bullish')) return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-  if (s.includes('bearish')) return 'bg-red-50 text-red-700 border-red-200'
-  return 'bg-amber-50 text-amber-700 border-amber-200'
+  if (s.includes('bullish')) return { bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' }
+  if (s.includes('bearish')) return { bg: 'bg-red-500/10', text: 'text-red-400', dot: 'bg-red-400' }
+  return { bg: 'bg-amber-500/10', text: 'text-amber-400', dot: 'bg-amber-400' }
 }
 
 function getChangeDirection(change: string): 'up' | 'down' | 'neutral' {
@@ -480,9 +548,10 @@ function isValidEmail(email: string): boolean {
 // Sub-Components
 // ---------------------------------------------------------------------------
 
-function TickerChip({ ticker, onRemove }: { ticker: string; onRemove: () => void }) {
+function TickerChip({ ticker, onRemove, category }: { ticker: string; onRemove: () => void; category: 'stock' | 'forex' | 'commodity' }) {
+  const color = getCategoryColor(category)
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 border border-border bg-secondary text-secondary-foreground text-xs tracking-[0.15em] uppercase font-normal">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary border border-border rounded-md text-xs tracking-wide uppercase font-medium transition-all duration-200 hover:border-primary/30" style={{ borderLeftWidth: '3px', borderLeftColor: color }}>
       {ticker}
       <button onClick={onRemove} className="ml-0.5 text-muted-foreground hover:text-foreground transition-colors" aria-label={`Remove ${ticker}`}>
         <IconX />
@@ -491,58 +560,67 @@ function TickerChip({ ticker, onRemove }: { ticker: string; onRemove: () => void
   )
 }
 
-function StockCard({ stock }: { stock: StockAnalysis }) {
+function AssetCard({ stock }: { stock: StockAnalysis }) {
   const dailyDir = getChangeDirection(stock?.daily_change ?? '')
   const weeklyDir = getChangeDirection(stock?.weekly_change ?? '')
   const newsItems = Array.isArray(stock?.key_news) ? stock.key_news : []
+  const sentiment = getSentimentColor(stock?.analyst_sentiment ?? '')
+  const category = getAssetCategory(stock?.ticker ?? '')
+  const catColor = getCategoryColor(category)
+  const catLabel = getCategoryLabel(category)
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardHeader className="pb-3 pt-6 px-6">
+    <Card className="border border-border bg-card rounded-md transition-all duration-300 hover:border-primary/20" style={{ borderTopWidth: '2px', borderTopColor: catColor }}>
+      <CardHeader className="pb-3 pt-5 px-5">
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <CardTitle className="text-lg font-medium tracking-[0.1em] font-serif">{stock?.ticker ?? 'N/A'}</CardTitle>
-              <Badge variant="outline" className={`text-[10px] tracking-[0.15em] uppercase font-normal border ${getSentimentStyle(stock?.analyst_sentiment ?? '')}`}>
-                {stock?.analyst_sentiment ?? 'N/A'}
-              </Badge>
+            <div className="flex items-center gap-2.5">
+              <CardTitle className="text-base font-semibold tracking-wide">{stock?.ticker ?? 'N/A'}</CardTitle>
+              <span className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: catColor + '20', color: catColor }}>
+                {catLabel}
+              </span>
             </div>
-            <CardDescription className="text-xs tracking-[0.1em] font-light mt-1">{stock?.company_name ?? ''}</CardDescription>
+            <CardDescription className="text-xs text-muted-foreground mt-0.5">{stock?.company_name ?? ''}</CardDescription>
           </div>
           <div className="text-right">
-            <p className="text-xl font-normal tracking-[0.05em] font-serif">{stock?.current_price ?? '--'}</p>
+            <p className="text-xl font-semibold tracking-tight text-foreground">{stock?.current_price ?? '--'}</p>
+            <div className={`flex items-center gap-1 justify-end mt-0.5 ${sentiment.text}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${sentiment.dot}`} />
+              <span className="text-[10px] font-medium uppercase tracking-wider">{stock?.analyst_sentiment ?? 'N/A'}</span>
+            </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-6 pb-6 space-y-5">
-        <div className="flex gap-6">
-          <div className="flex items-center gap-1.5 text-sm">
-            {dailyDir === 'up' ? <IconTrendingUp className="text-emerald-600" /> : dailyDir === 'down' ? <IconTrendingDown className="text-red-600" /> : <IconActivity className="text-muted-foreground" />}
-            <span className="text-muted-foreground font-light tracking-[0.05em] text-xs">Daily</span>
-            <span className={`font-normal text-xs tracking-[0.05em] ${dailyDir === 'up' ? 'text-emerald-700' : dailyDir === 'down' ? 'text-red-700' : 'text-foreground'}`}>
+      <CardContent className="px-5 pb-5 space-y-4">
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1.5">
+            {dailyDir === 'up' ? <IconTrendingUp className="text-emerald-400 w-3.5 h-3.5" /> : dailyDir === 'down' ? <IconTrendingDown className="text-red-400 w-3.5 h-3.5" /> : <IconActivity className="text-muted-foreground w-3.5 h-3.5" />}
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Day</span>
+            <span className={`text-xs font-medium ${dailyDir === 'up' ? 'text-emerald-400' : dailyDir === 'down' ? 'text-red-400' : 'text-foreground'}`}>
               {stock?.daily_change ?? '--'}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            {weeklyDir === 'up' ? <IconTrendingUp className="text-emerald-600" /> : weeklyDir === 'down' ? <IconTrendingDown className="text-red-600" /> : <IconActivity className="text-muted-foreground" />}
-            <span className="text-muted-foreground font-light tracking-[0.05em] text-xs">Weekly</span>
-            <span className={`font-normal text-xs tracking-[0.05em] ${weeklyDir === 'up' ? 'text-emerald-700' : weeklyDir === 'down' ? 'text-red-700' : 'text-foreground'}`}>
+          <div className="w-px bg-border" />
+          <div className="flex items-center gap-1.5">
+            {weeklyDir === 'up' ? <IconTrendingUp className="text-emerald-400 w-3.5 h-3.5" /> : weeklyDir === 'down' ? <IconTrendingDown className="text-red-400 w-3.5 h-3.5" /> : <IconActivity className="text-muted-foreground w-3.5 h-3.5" />}
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Week</span>
+            <span className={`text-xs font-medium ${weeklyDir === 'up' ? 'text-emerald-400' : weeklyDir === 'down' ? 'text-red-400' : 'text-foreground'}`}>
               {stock?.weekly_change ?? '--'}
             </span>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         {newsItems.length > 0 && (
           <div>
-            <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-normal flex items-center gap-1.5">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 font-medium flex items-center gap-1.5">
               <IconNewspaper className="w-3 h-3" />
               Key News
             </h4>
-            <ul className="space-y-1">
+            <ul className="space-y-1.5">
               {newsItems.map((news, idx) => (
-                <li key={idx} className="text-xs font-light leading-[1.8] text-foreground pl-3 border-l border-border">
+                <li key={idx} className="text-xs leading-relaxed text-secondary-foreground pl-3 border-l-2 border-border">
                   {news}
                 </li>
               ))}
@@ -552,18 +630,18 @@ function StockCard({ stock }: { stock: StockAnalysis }) {
 
         {stock?.notable_events && (
           <div>
-            <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5 font-normal flex items-center gap-1.5">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium flex items-center gap-1.5">
               <IconCalendar className="w-3 h-3" />
               Notable Events
             </h4>
-            <p className="text-xs font-light leading-[1.8] text-foreground">{stock.notable_events}</p>
+            <p className="text-xs leading-relaxed text-secondary-foreground">{stock.notable_events}</p>
           </div>
         )}
 
         {stock?.summary && (
-          <div className="bg-secondary/50 p-4 border border-border">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5 font-normal">Summary</h4>
-            <div className="text-xs font-light leading-[1.8] text-foreground">{renderMarkdown(stock.summary)}</div>
+          <div className="bg-muted/50 p-3.5 rounded-md border border-border">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5 font-medium">Summary</h4>
+            <div className="text-xs leading-relaxed text-secondary-foreground">{renderMarkdown(stock.summary)}</div>
           </div>
         )}
       </CardContent>
@@ -576,47 +654,51 @@ function ReportCard({ report, onToggle }: { report: SavedReport; onToggle: () =>
   const tickers = stocks.map((s) => s?.ticker ?? '').filter(Boolean)
 
   return (
-    <Card className="border border-border shadow-sm">
-      <button onClick={onToggle} className="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-secondary/30 transition-colors">
-        <div className="flex items-center gap-4 flex-wrap">
+    <Card className="border border-border bg-card rounded-md transition-all duration-300 hover:border-primary/30">
+      <button onClick={onToggle} className="w-full text-left px-5 py-4 flex items-center justify-between transition-colors">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-muted-foreground">
             <IconCalendar className="w-3.5 h-3.5" />
-            <span className="text-xs tracking-[0.1em] font-light">{report?.date ?? 'Unknown date'}</span>
+            <span className="text-xs tracking-wide font-medium">{report?.date ?? 'Unknown date'}</span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            {tickers.map((t) => (
-              <Badge key={t} variant="outline" className="text-[10px] tracking-[0.15em] uppercase font-normal">
-                {t}
-              </Badge>
-            ))}
+            {tickers.map((t) => {
+              const cat = getAssetCategory(t)
+              const catCol = getCategoryColor(cat)
+              return (
+                <span key={t} className="text-[10px] tracking-wider uppercase font-medium px-2 py-0.5 rounded border border-border" style={{ borderLeftWidth: '2px', borderLeftColor: catCol }}>
+                  {t}
+                </span>
+              )
+            })}
           </div>
           {report?.result?.email_sent && (
-            <Badge variant="secondary" className="text-[10px] tracking-[0.12em] font-normal flex items-center gap-1">
+            <Badge variant="secondary" className="text-[10px] tracking-wider font-medium flex items-center gap-1 rounded-md">
               <IconMail className="w-3 h-3" />
               Sent
             </Badge>
           )}
         </div>
-        <div className="ml-4 flex-shrink-0">
+        <div className="ml-4 flex-shrink-0 text-muted-foreground">
           {report?.expanded ? <IconChevronUp /> : <IconChevronDown />}
         </div>
       </button>
       {report?.expanded && (
-        <div className="px-6 pb-6 space-y-6">
-          <Separator />
+        <div className="px-5 pb-5 space-y-5">
+          <Separator className="bg-border" />
           {report?.result?.overall_summary && (
-            <div className="bg-secondary/40 p-4 border border-border">
-              <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-normal">Overall Summary</h4>
-              <div className="text-sm font-light leading-[1.8]">{renderMarkdown(report.result.overall_summary)}</div>
+            <div className="bg-muted/30 p-4 rounded-md border border-border">
+              <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 font-medium">Overall Summary</h4>
+              <div className="text-sm leading-relaxed text-secondary-foreground">{renderMarkdown(report.result.overall_summary)}</div>
             </div>
           )}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {stocks.map((stock, idx) => (
-              <StockCard key={stock?.ticker ?? idx} stock={stock} />
+              <AssetCard key={stock?.ticker ?? idx} stock={stock} />
             ))}
           </div>
           {report?.result?.recipient && (
-            <p className="text-xs text-muted-foreground font-light tracking-[0.1em] flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <IconMail className="w-3 h-3" />
               Delivered to {report.result.recipient}
             </p>
@@ -649,26 +731,34 @@ function SchedulePanel({
   const cronExpr = schedule?.cron_expression ?? '0 8 * * *'
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardHeader className="pb-3 pt-6 px-6">
+    <Card className="border border-border bg-card rounded-md">
+      <CardHeader className="pb-3 pt-5 px-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <IconClock className="w-4 h-4 text-muted-foreground" />
-            <CardTitle className="text-sm font-medium tracking-[0.1em] uppercase">Daily Schedule</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <IconClock className="w-4 h-4 text-primary" />
+            <CardTitle className="text-sm font-semibold tracking-wide uppercase">Daily Schedule</CardTitle>
           </div>
-          <Badge variant={isActive ? 'default' : 'secondary'} className="text-[10px] tracking-[0.15em] uppercase font-normal">
-            {isActive ? 'Active' : 'Paused'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {isActive && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+            )}
+            <Badge variant={isActive ? 'default' : 'secondary'} className="text-[10px] tracking-wider uppercase font-medium rounded-md">
+              {isActive ? 'Active' : 'Paused'}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="px-6 pb-6 space-y-4">
+      <CardContent className="px-5 pb-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground font-light tracking-[0.1em]">
+            <p className="text-xs text-muted-foreground tracking-wide">
               {cronExpr ? cronToHuman(cronExpr) : 'No schedule'} (ET)
             </p>
             {schedule?.next_run_time && (
-              <p className="text-xs text-muted-foreground font-light tracking-[0.05em]">
+              <p className="text-xs text-muted-foreground">
                 Next run: {new Date(schedule.next_run_time).toLocaleString()}
               </p>
             )}
@@ -678,7 +768,7 @@ function SchedulePanel({
             size="sm"
             onClick={onToggleSchedule}
             disabled={scheduleLoading}
-            className="text-xs tracking-[0.1em] uppercase font-normal"
+            className="text-xs tracking-wide uppercase font-medium rounded-md"
           >
             {scheduleLoading ? (
               <IconLoader className="w-3.5 h-3.5" />
@@ -696,28 +786,28 @@ function SchedulePanel({
           </Button>
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-normal">Run History</h4>
-            <button onClick={onRefreshLogs} disabled={logsLoading} className="text-muted-foreground hover:text-foreground transition-colors">
+            <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Run History</h4>
+            <button onClick={onRefreshLogs} disabled={logsLoading} className="text-muted-foreground hover:text-primary transition-colors">
               <IconRefresh className={`w-3.5 h-3.5 ${logsLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
           {displayLogs.length === 0 ? (
-            <p className="text-xs text-muted-foreground font-light tracking-[0.1em]">No execution history yet.</p>
+            <p className="text-xs text-muted-foreground">No execution history yet.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {displayLogs.slice(0, 5).map((log) => (
                 <div key={log.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                   <div className="flex items-center gap-2">
-                    {log.success ? <IconCheckCircle className="w-3.5 h-3.5 text-emerald-600" /> : <IconXCircle className="w-3.5 h-3.5 text-red-500" />}
-                    <span className="text-xs font-light tracking-[0.05em]">
+                    {log.success ? <IconCheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <IconXCircle className="w-3.5 h-3.5 text-red-400" />}
+                    <span className="text-xs text-secondary-foreground">
                       {new Date(log.executed_at).toLocaleString()}
                     </span>
                   </div>
-                  <Badge variant={log.success ? 'secondary' : 'destructive'} className="text-[10px] tracking-[0.1em] font-normal">
+                  <Badge variant={log.success ? 'secondary' : 'destructive'} className="text-[10px] tracking-wider font-medium rounded-md">
                     {log.success ? 'Success' : 'Failed'}
                   </Badge>
                 </div>
@@ -730,6 +820,37 @@ function SchedulePanel({
   )
 }
 
+// Loading progress steps
+function AnalysisProgress({ activeAgentId }: { activeAgentId: string | null }) {
+  const steps = [
+    { id: MANAGER_AGENT_ID, label: 'Manager Agent', desc: 'Orchestrating analysis' },
+    { id: RESEARCH_AGENT_ID, label: 'Market Research', desc: 'Fetching market data' },
+    { id: EMAIL_AGENT_ID, label: 'Email Composer', desc: 'Composing report' },
+  ]
+  return (
+    <div className="mt-4 p-4 bg-muted/30 rounded-md border border-border">
+      <div className="flex items-center gap-3 mb-3">
+        <IconLoader className="w-4 h-4 text-primary" />
+        <p className="text-xs font-medium text-foreground tracking-wide">Analyzing your portfolio...</p>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step) => {
+          const isActive = activeAgentId === step.id
+          return (
+            <div key={step.id} className={`flex items-center gap-3 py-1.5 px-3 rounded transition-all duration-300 ${isActive ? 'bg-primary/10 border border-primary/20' : ''}`}>
+              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isActive ? 'bg-primary animate-pulse' : 'bg-muted-foreground/30'}`} />
+              <div>
+                <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{step.label}</span>
+                {isActive && <p className="text-[10px] text-muted-foreground">{step.desc}</p>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Main Page Component
 // ---------------------------------------------------------------------------
@@ -739,10 +860,11 @@ export default function Page() {
   const [useSampleData, setUseSampleData] = useState(false)
 
   // Settings
-  const [settings, setSettings] = useState<AppSettings>({ tickers: [], email: '' })
+  const [settings, setSettings] = useState<AppSettings>({ stocks: [], forex: [], commodities: [], email: '' })
   const [tickerInput, setTickerInput] = useState('')
   const [emailInput, setEmailInput] = useState('')
   const [settingsMsg, setSettingsMsg] = useState('')
+  const [assetTab, setAssetTab] = useState<'stocks' | 'forex' | 'commodities'>('stocks')
 
   // Reports
   const [reports, setReports] = useState<SavedReport[]>([])
@@ -753,6 +875,9 @@ export default function Page() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [latestResult, setLatestResult] = useState<AnalysisResult | null>(null)
 
+  // Category filter for results
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'stock' | 'forex' | 'commodity'>('all')
+
   // Schedule
   const [schedule, setSchedule] = useState<Schedule | null>(null)
   const [scheduleLogs, setScheduleLogs] = useState<ExecutionLog[]>([])
@@ -761,15 +886,38 @@ export default function Page() {
 
   const [mounted, setMounted] = useState(false)
 
+  // Total instruments count
+  const totalInstruments = settings.stocks.length + settings.forex.length + settings.commodities.length
+
   // Load from localStorage on mount
   useEffect(() => {
     setMounted(true)
     try {
       const savedSettings = localStorage.getItem(LS_SETTINGS_KEY)
       if (savedSettings) {
-        const parsed = JSON.parse(savedSettings) as AppSettings
-        setSettings(parsed)
-        setEmailInput(parsed.email ?? '')
+        const parsed = JSON.parse(savedSettings)
+        // Migration: if old format with `tickers` key, migrate
+        if (parsed && Array.isArray((parsed as LegacySettings).tickers)) {
+          const legacy = parsed as LegacySettings
+          const migrated: AppSettings = {
+            stocks: legacy.tickers ?? [],
+            forex: [],
+            commodities: [],
+            email: legacy.email ?? '',
+          }
+          setSettings(migrated)
+          setEmailInput(migrated.email)
+          localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(migrated))
+        } else {
+          const s = parsed as AppSettings
+          setSettings({
+            stocks: Array.isArray(s?.stocks) ? s.stocks : [],
+            forex: Array.isArray(s?.forex) ? s.forex : [],
+            commodities: Array.isArray(s?.commodities) ? s.commodities : [],
+            email: s?.email ?? '',
+          })
+          setEmailInput(s?.email ?? '')
+        }
       }
     } catch {
       // ignore
@@ -852,16 +1000,20 @@ export default function Page() {
   const addTicker = useCallback(() => {
     const val = tickerInput.trim().toUpperCase()
     if (!val) return
-    if (settings.tickers.includes(val)) {
+    const currentList = settings[assetTab]
+    if (Array.isArray(currentList) && currentList.includes(val)) {
       setTickerInput('')
       return
     }
-    setSettings((prev) => ({ ...prev, tickers: [...prev.tickers, val] }))
+    setSettings((prev) => ({ ...prev, [assetTab]: [...(Array.isArray(prev[assetTab]) ? prev[assetTab] : []), val] }))
     setTickerInput('')
-  }, [tickerInput, settings.tickers])
+  }, [tickerInput, settings, assetTab])
 
-  const removeTicker = useCallback((ticker: string) => {
-    setSettings((prev) => ({ ...prev, tickers: prev.tickers.filter((t) => t !== ticker) }))
+  const removeTicker = useCallback((ticker: string, category: 'stocks' | 'forex' | 'commodities') => {
+    setSettings((prev) => ({
+      ...prev,
+      [category]: Array.isArray(prev[category]) ? prev[category].filter((t) => t !== ticker) : [],
+    }))
   }, [])
 
   const saveSettings = useCallback(() => {
@@ -878,11 +1030,11 @@ export default function Page() {
   }, [settings, emailInput])
 
   const runAnalysis = useCallback(async () => {
-    const tickers = settings.tickers
+    const allAssets = [...settings.stocks, ...settings.forex, ...settings.commodities]
     const email = settings.email
 
-    if (tickers.length === 0) {
-      setAnalysisError('Please add stock tickers in Settings first.')
+    if (allAssets.length === 0) {
+      setAnalysisError('Please add instruments in Settings first.')
       return
     }
     if (!email || !isValidEmail(email)) {
@@ -896,7 +1048,7 @@ export default function Page() {
     setActiveAgentId(MANAGER_AGENT_ID)
 
     try {
-      const message = `Analyze the following stocks: ${tickers.join(', ')}. Send the analysis email to ${email}.`
+      const message = `Analyze the following instruments: ${allAssets.join(', ')}. These include stocks, forex pairs, and commodities. Send the analysis email to ${email}.`
       const result = await callAIAgent(message, MANAGER_AGENT_ID)
 
       setActiveAgentId(null)
@@ -955,10 +1107,18 @@ export default function Page() {
 
   const displayResult = useSampleData ? SAMPLE_RESULT : latestResult
 
+  // Filter stocks_analyzed by category
+  const filteredAssets = Array.isArray(displayResult?.stocks_analyzed)
+    ? displayResult.stocks_analyzed.filter((s) => {
+        if (categoryFilter === 'all') return true
+        return getAssetCategory(s?.ticker ?? '') === categoryFilter
+      })
+    : []
+
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <IconLoader className="w-6 h-6 text-muted-foreground" />
+        <IconLoader className="w-6 h-6 text-primary" />
       </div>
     )
   }
@@ -966,37 +1126,39 @@ export default function Page() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground">
-        {/* Header */}
-        <header className="border-b border-border bg-card">
-          <div className="max-w-6xl mx-auto px-6 py-6">
+        {/* Header with gold top accent */}
+        <div className="h-0.5 bg-primary" />
+        <header className="border-b border-border bg-card/80 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 py-5">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-medium tracking-[0.15em] font-serif text-foreground">STOCKPULSE</h1>
-                <p className="text-xs text-muted-foreground font-light tracking-[0.15em] mt-1">Portfolio Intelligence Platform</p>
+                <h1 className="text-2xl font-bold tracking-wider text-foreground">STOCKPULSE</h1>
+                <p className="text-xs text-muted-foreground tracking-widest mt-0.5 uppercase">Multi-Asset Intelligence Terminal</p>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-5">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="sample-toggle" className="text-xs tracking-[0.1em] font-light text-muted-foreground cursor-pointer">
+                  <Label htmlFor="sample-toggle" className="text-xs tracking-wide text-muted-foreground cursor-pointer">
                     Sample Data
                   </Label>
                   <Switch id="sample-toggle" checked={useSampleData} onCheckedChange={setUseSampleData} />
                 </div>
-                <nav className="flex border border-border">
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`px-5 py-2 text-xs tracking-[0.15em] uppercase font-normal transition-colors ${activeTab === 'dashboard' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
-                  >
-                    Dashboard
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`px-5 py-2 text-xs tracking-[0.15em] uppercase font-normal transition-colors border-l border-border ${activeTab === 'settings' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <IconSettings className="w-3 h-3" />
-                      Settings
-                    </span>
-                  </button>
+                <nav className="flex">
+                  {(['dashboard', 'settings'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-4 py-2 text-xs tracking-widest uppercase font-medium transition-all duration-200 border-b-2 ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                      {tab === 'settings' ? (
+                        <span className="flex items-center gap-1.5">
+                          <IconSettings className="w-3 h-3" />
+                          Settings
+                        </span>
+                      ) : (
+                        'Dashboard'
+                      )}
+                    </button>
+                  ))}
                 </nav>
               </div>
             </div>
@@ -1004,80 +1166,105 @@ export default function Page() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-6xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-6 py-6">
           {/* ============================================================== */}
           {/* DASHBOARD TAB                                                  */}
           {/* ============================================================== */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-8">
-              {/* Portfolio Summary Bar */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="border border-border shadow-sm">
-                  <CardContent className="p-5 flex items-center gap-3">
-                    <IconBarChart className="w-4 h-4 text-primary" />
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-normal">Tracked Stocks</p>
-                      <p className="text-xl font-normal font-serif tracking-[0.05em]">{settings.tickers.length}</p>
+            <div className="space-y-6">
+              {/* Portfolio Summary Bar - horizontal with dividers */}
+              <Card className="border border-border bg-card rounded-md">
+                <CardContent className="p-0">
+                  <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div className="flex-1 px-5 py-4 flex items-center gap-3">
+                      <IconBarChart className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Instruments</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl font-bold text-foreground">{useSampleData ? 4 : totalInstruments}</span>
+                          {(useSampleData || totalInstruments > 0) && (
+                            <div className="flex gap-1">
+                              {(useSampleData ? 2 : settings.stocks.length) > 0 && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: '#3b82f620', color: '#3b82f6' }}>
+                                  {useSampleData ? 2 : settings.stocks.length}S
+                                </span>
+                              )}
+                              {(useSampleData ? 1 : settings.forex.length) > 0 && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: '#10b98120', color: '#10b981' }}>
+                                  {useSampleData ? 1 : settings.forex.length}F
+                                </span>
+                              )}
+                              {(useSampleData ? 1 : settings.commodities.length) > 0 && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: '#f59e0b20', color: '#f59e0b' }}>
+                                  {useSampleData ? 1 : settings.commodities.length}C
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-border shadow-sm">
-                  <CardContent className="p-5 flex items-center gap-3">
-                    <IconClock className="w-4 h-4 text-primary" />
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-normal">Last Analysis</p>
-                      <p className="text-sm font-light tracking-[0.05em]">
-                        {reports.length > 0 ? (reports[0]?.date ?? 'N/A') : 'Never'}
-                      </p>
+                    <div className="flex-1 px-5 py-4 flex items-center gap-3">
+                      <IconClock className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Last Analysis</p>
+                        <p className="text-sm font-medium text-foreground">
+                          {useSampleData ? '2026-02-21' : reports.length > 0 ? (reports[0]?.date ?? 'N/A') : 'Never'}
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-border shadow-sm">
-                  <CardContent className="p-5 flex items-center gap-3">
-                    <IconCalendar className="w-4 h-4 text-primary" />
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-normal">Scheduler</p>
-                      <Badge variant={schedule?.is_active ? 'default' : 'secondary'} className="text-[10px] tracking-[0.12em] font-normal mt-0.5">
-                        {schedule?.is_active ? 'Active' : 'Paused'}
-                      </Badge>
+                    <div className="flex-1 px-5 py-4 flex items-center gap-3">
+                      <IconCalendar className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Scheduler</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {(schedule?.is_active ?? false) && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                            </span>
+                          )}
+                          <Badge variant={schedule?.is_active ? 'default' : 'secondary'} className="text-[10px] tracking-wider font-medium rounded-md">
+                            {schedule?.is_active ? 'Active' : 'Paused'}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Run Analysis CTA or Empty State */}
-              {settings.tickers.length === 0 && !useSampleData ? (
-                <Card className="border border-border shadow-sm">
+              {totalInstruments === 0 && !useSampleData ? (
+                <Card className="border border-border bg-card rounded-md">
                   <CardContent className="p-10 text-center">
                     <IconBarChart className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-base font-medium tracking-[0.1em] font-serif mb-2">Add stocks to get started</h3>
-                    <p className="text-xs text-muted-foreground font-light tracking-[0.1em] mb-6">
-                      Configure your portfolio tickers and email in settings to begin receiving daily analysis.
+                    <h3 className="text-base font-semibold mb-2 text-foreground">Add instruments to get started</h3>
+                    <p className="text-xs text-muted-foreground mb-6 max-w-md mx-auto">
+                      Configure your stocks, forex pairs, and commodities in settings to begin receiving multi-asset analysis.
                     </p>
-                    <Button onClick={() => setActiveTab('settings')} className="text-xs tracking-[0.15em] uppercase font-normal px-6">
+                    <Button onClick={() => setActiveTab('settings')} className="text-xs tracking-wider uppercase font-medium px-6 rounded-md">
                       <IconSettings className="w-3.5 h-3.5 mr-2" />
                       Go to Settings
                     </Button>
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border border-border shadow-sm">
-                  <CardContent className="p-6">
+                <Card className="border border-border bg-card rounded-md">
+                  <CardContent className="p-5">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
-                        <h3 className="text-sm font-medium tracking-[0.1em] uppercase mb-1">On-Demand Analysis</h3>
-                        <p className="text-xs text-muted-foreground font-light tracking-[0.05em]">
+                        <h3 className="text-sm font-semibold tracking-wide uppercase mb-1 text-foreground">On-Demand Analysis</h3>
+                        <p className="text-xs text-muted-foreground">
                           {useSampleData
-                            ? 'Analyze AAPL, MSFT, TSLA and send report to investor@example.com'
-                            : `Analyze ${settings.tickers.join(', ')} and send report to ${settings.email || 'your email'}`}
+                            ? 'Analyze AAPL, TSLA, EUR/USD, GOLD and send report to investor@example.com'
+                            : `Analyze ${[...settings.stocks, ...settings.forex, ...settings.commodities].join(', ') || 'your instruments'} and deliver to ${settings.email || 'your email'}`}
                         </p>
                       </div>
                       <Button
                         onClick={runAnalysis}
                         disabled={analysisLoading || useSampleData}
-                        className="text-xs tracking-[0.15em] uppercase font-normal px-6"
+                        className="text-xs tracking-wider uppercase font-medium px-6 rounded-md"
                         size="lg"
                       >
                         {analysisLoading ? (
@@ -1088,28 +1275,19 @@ export default function Page() {
                         ) : (
                           <>
                             <IconPlay className="w-3.5 h-3.5 mr-2" />
-                            Run Analysis Now
+                            Run Analysis
                           </>
                         )}
                       </Button>
                     </div>
-                    {analysisLoading && (
-                      <div className="mt-4 p-4 bg-secondary/40 border border-border">
-                        <div className="flex items-center gap-3">
-                          <IconLoader className="w-4 h-4 text-primary" />
-                          <p className="text-xs font-light tracking-[0.1em] text-muted-foreground">
-                            Analyzing your portfolio -- the manager agent is coordinating stock research and email delivery...
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    {analysisLoading && <AnalysisProgress activeAgentId={activeAgentId} />}
                     {analysisError && (
-                      <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20">
+                      <div className="mt-4 p-4 bg-red-500/5 rounded-md border border-red-500/20">
                         <div className="flex items-start gap-3">
-                          <IconAlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                          <IconAlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-xs font-normal text-destructive tracking-[0.05em]">{analysisError}</p>
-                            <button onClick={runAnalysis} className="text-xs text-primary underline mt-2 tracking-[0.05em] font-light">
+                            <p className="text-xs font-medium text-red-400">{analysisError}</p>
+                            <button onClick={runAnalysis} className="text-xs text-primary underline mt-2 font-medium">
                               Retry analysis
                             </button>
                           </div>
@@ -1123,37 +1301,63 @@ export default function Page() {
               {/* Latest Result */}
               {displayResult && !analysisLoading && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-sm font-medium tracking-[0.15em] uppercase">Latest Analysis</h2>
-                    <Badge variant="outline" className="text-[10px] tracking-[0.1em] font-normal">
-                      {displayResult?.analysis_date ?? ''}
-                    </Badge>
-                    {displayResult?.email_sent && (
-                      <Badge variant="secondary" className="text-[10px] tracking-[0.1em] font-normal flex items-center gap-1">
-                        <IconCheckCircle className="w-3 h-3 text-emerald-600" />
-                        Email Delivered
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-foreground">Latest Analysis</h2>
+                      <Badge variant="outline" className="text-[10px] tracking-wider font-medium rounded-md">
+                        {displayResult?.analysis_date ?? ''}
                       </Badge>
-                    )}
+                      {displayResult?.email_sent && (
+                        <Badge variant="secondary" className="text-[10px] tracking-wider font-medium flex items-center gap-1 rounded-md">
+                          <IconCheckCircle className="w-3 h-3 text-emerald-400" />
+                          Email Delivered
+                        </Badge>
+                      )}
+                    </div>
+                    {/* Category filter tabs */}
+                    <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                      {([
+                        { key: 'all' as const, label: 'All' },
+                        { key: 'stock' as const, label: 'Stocks' },
+                        { key: 'forex' as const, label: 'Forex' },
+                        { key: 'commodity' as const, label: 'Commodities' },
+                      ]).map((f) => (
+                        <button
+                          key={f.key}
+                          onClick={() => setCategoryFilter(f.key)}
+                          className={`px-3 py-1 text-[10px] tracking-wider uppercase font-medium rounded transition-all duration-200 ${categoryFilter === f.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {displayResult?.overall_summary && (
-                    <Card className="border border-border shadow-sm">
-                      <CardContent className="p-6">
-                        <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 font-normal">Portfolio Overview</h4>
-                        <div className="text-sm font-light leading-[1.8]">{renderMarkdown(displayResult.overall_summary)}</div>
+                    <Card className="border border-border bg-card rounded-md">
+                      <CardContent className="p-5">
+                        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 font-medium">Portfolio Overview</h4>
+                        <div className="text-sm leading-relaxed text-secondary-foreground">{renderMarkdown(displayResult.overall_summary)}</div>
                       </CardContent>
                     </Card>
                   )}
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {Array.isArray(displayResult?.stocks_analyzed) &&
-                      displayResult.stocks_analyzed.map((stock, idx) => (
-                        <StockCard key={stock?.ticker ?? idx} stock={stock} />
-                      ))}
+                    {filteredAssets.map((stock, idx) => (
+                      <AssetCard key={stock?.ticker ?? idx} stock={stock} />
+                    ))}
                   </div>
 
+                  {filteredAssets.length === 0 && (
+                    <Card className="border border-border bg-card rounded-md">
+                      <CardContent className="p-8 text-center">
+                        <p className="text-xs text-muted-foreground">No assets match the selected category filter.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {displayResult?.recipient && (
-                    <p className="text-xs text-muted-foreground font-light tracking-[0.1em] flex items-center gap-1.5">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <IconMail className="w-3 h-3" />
                       Report delivered to {displayResult.recipient}
                     </p>
@@ -1163,7 +1367,7 @@ export default function Page() {
 
               {/* Schedule Management */}
               <div>
-                <h2 className="text-sm font-medium tracking-[0.15em] uppercase mb-4">Schedule Management</h2>
+                <h2 className="text-sm font-semibold tracking-wider uppercase mb-4 text-foreground">Schedule Management</h2>
                 <SchedulePanel
                   schedule={schedule}
                   logs={scheduleLogs}
@@ -1177,12 +1381,12 @@ export default function Page() {
 
               {/* Report History */}
               <div>
-                <h2 className="text-sm font-medium tracking-[0.15em] uppercase mb-4">Report History</h2>
+                <h2 className="text-sm font-semibold tracking-wider uppercase mb-4 text-foreground">Report History</h2>
                 {displayReports.length === 0 ? (
-                  <Card className="border border-border shadow-sm">
+                  <Card className="border border-border bg-card rounded-md">
                     <CardContent className="p-10 text-center">
                       <IconNewspaper className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-sm font-light tracking-[0.1em] text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         No analysis reports yet. Run your first analysis!
                       </p>
                     </CardContent>
@@ -1207,31 +1411,23 @@ export default function Page() {
               </div>
 
               {/* Agent Info */}
-              <Card className="border border-border shadow-sm">
+              <Card className="border border-border bg-card rounded-md">
                 <CardContent className="p-5">
-                  <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 font-normal">System Agents</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${activeAgentId === MANAGER_AGENT_ID ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
-                        <span className="text-xs font-light tracking-[0.1em]">Portfolio Analysis Manager</span>
+                  <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 font-medium">System Agents</h4>
+                  <div className="space-y-1">
+                    {[
+                      { id: MANAGER_AGENT_ID, name: 'Portfolio Analysis Manager', role: 'Orchestrator' },
+                      { id: RESEARCH_AGENT_ID, name: 'Market Research Agent', role: 'Sub-agent' },
+                      { id: EMAIL_AGENT_ID, name: 'Email Composer Agent', role: 'Sub-agent' },
+                    ].map((agent) => (
+                      <div key={agent.id} className={`flex items-center justify-between py-2 px-3 rounded transition-all duration-300 ${activeAgentId === agent.id ? 'bg-primary/5 border border-primary/20' : ''}`}>
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-2 h-2 rounded-full transition-all duration-300 ${activeAgentId === agent.id ? 'bg-primary animate-pulse' : 'bg-muted-foreground/30'}`} />
+                          <span className="text-xs font-medium tracking-wide text-foreground">{agent.name}</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground tracking-wider font-medium">{agent.role}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground tracking-[0.1em] font-light">Orchestrator</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${activeAgentId === RESEARCH_AGENT_ID ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
-                        <span className="text-xs font-light tracking-[0.1em]">Stock Research Agent</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground tracking-[0.1em] font-light">Sub-agent</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${activeAgentId === EMAIL_AGENT_ID ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
-                        <span className="text-xs font-light tracking-[0.1em]">Email Composer Agent</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground tracking-[0.1em] font-light">Sub-agent</span>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -1242,64 +1438,113 @@ export default function Page() {
           {/* SETTINGS TAB                                                   */}
           {/* ============================================================== */}
           {activeTab === 'settings' && (
-            <div className="max-w-2xl space-y-8">
+            <div className="max-w-2xl space-y-6">
               <div>
-                <h2 className="text-lg font-medium tracking-[0.15em] font-serif mb-1">Configuration</h2>
-                <p className="text-xs text-muted-foreground font-light tracking-[0.1em]">
-                  Manage your portfolio tickers, delivery email, and daily schedule.
+                <h2 className="text-lg font-bold tracking-wider mb-1 text-foreground">Configuration</h2>
+                <p className="text-xs text-muted-foreground">
+                  Manage your tracked instruments, delivery email, and daily schedule.
                 </p>
               </div>
 
-              {/* Stock Ticker Input */}
-              <Card className="border border-border shadow-sm">
-                <CardHeader className="pb-3 pt-6 px-6">
-                  <CardTitle className="text-sm font-medium tracking-[0.1em] uppercase">Stock Tickers</CardTitle>
-                  <CardDescription className="text-xs font-light tracking-[0.05em]">
-                    Add the stock symbols you want to track. Press Enter or click Add.
+              {/* Multi-Asset Input */}
+              <Card className="border border-border bg-card rounded-md">
+                <CardHeader className="pb-3 pt-5 px-5">
+                  <CardTitle className="text-sm font-semibold tracking-wide uppercase">Instruments</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    Add stocks, forex pairs, and commodities to track.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-6 pb-6">
+                <CardContent className="px-5 pb-5">
+                  {/* Asset category tabs */}
+                  <div className="flex gap-0.5 bg-muted rounded-md p-0.5 mb-4">
+                    {([
+                      { key: 'stocks' as const, label: 'Stocks', icon: IconBarChart, color: '#3b82f6', placeholder: 'e.g. AAPL, TSLA' },
+                      { key: 'forex' as const, label: 'Forex', icon: IconGlobe, color: '#10b981', placeholder: 'e.g. EUR/USD' },
+                      { key: 'commodities' as const, label: 'Commodities', icon: IconDiamond, color: '#f59e0b', placeholder: 'e.g. GOLD' },
+                    ]).map((t) => (
+                      <button
+                        key={t.key}
+                        onClick={() => { setAssetTab(t.key); setTickerInput('') }}
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] tracking-wider uppercase font-medium rounded transition-all duration-200 ${assetTab === t.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        <t.icon className="w-3 h-3" />
+                        {t.label}
+                        {(Array.isArray(settings[t.key]) ? settings[t.key].length : 0) > 0 && (
+                          <span className="text-[9px] px-1 py-0 rounded-full font-bold" style={{ backgroundColor: t.color + '20', color: t.color }}>
+                            {Array.isArray(settings[t.key]) ? settings[t.key].length : 0}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="flex gap-2 mb-4">
                     <Input
-                      placeholder="e.g. AAPL"
+                      placeholder={assetTab === 'stocks' ? 'e.g. AAPL' : assetTab === 'forex' ? 'e.g. EUR/USD' : 'e.g. GOLD'}
                       value={tickerInput}
-                      onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
+                      onChange={(e) => setTickerInput(assetTab === 'forex' ? e.target.value.toUpperCase() : e.target.value.toUpperCase())}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault()
                           addTicker()
                         }
                       }}
-                      className="flex-1 text-xs tracking-[0.1em] uppercase font-light"
+                      className="flex-1 text-xs tracking-wide uppercase font-medium bg-background rounded-md"
                     />
-                    <Button onClick={addTicker} variant="outline" size="sm" className="text-xs tracking-[0.1em] uppercase font-normal" disabled={!tickerInput.trim()}>
+                    <Button onClick={addTicker} variant="outline" size="sm" className="text-xs tracking-wide uppercase font-medium rounded-md" disabled={!tickerInput.trim()}>
                       <IconPlus className="w-3.5 h-3.5 mr-1" />
                       Add
                     </Button>
                   </div>
-                  {settings.tickers.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {settings.tickers.map((ticker) => (
-                        <TickerChip key={ticker} ticker={ticker} onRemove={() => removeTicker(ticker)} />
-                      ))}
+
+                  {/* Display all tickers grouped by current tab */}
+                  {(() => {
+                    const currentList = Array.isArray(settings[assetTab]) ? settings[assetTab] : []
+                    if (currentList.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {currentList.map((ticker) => (
+                            <TickerChip key={ticker} ticker={ticker} category={assetTab === 'stocks' ? 'stock' : assetTab === 'forex' ? 'forex' : 'commodity'} onRemove={() => removeTicker(ticker, assetTab)} />
+                          ))}
+                        </div>
+                      )
+                    }
+                    return (
+                      <p className="text-xs text-muted-foreground">
+                        No {assetTab} added yet. Type a symbol above and press Enter.
+                      </p>
+                    )
+                  })()}
+
+                  {/* Show summary of all categories */}
+                  {totalInstruments > 0 && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">All Tracked Instruments</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Array.isArray(settings.stocks) && settings.stocks.map((t) => (
+                          <span key={`s-${t}`} className="text-[10px] px-2 py-0.5 rounded border border-border font-medium" style={{ borderLeftWidth: '2px', borderLeftColor: '#3b82f6' }}>{t}</span>
+                        ))}
+                        {Array.isArray(settings.forex) && settings.forex.map((t) => (
+                          <span key={`f-${t}`} className="text-[10px] px-2 py-0.5 rounded border border-border font-medium" style={{ borderLeftWidth: '2px', borderLeftColor: '#10b981' }}>{t}</span>
+                        ))}
+                        {Array.isArray(settings.commodities) && settings.commodities.map((t) => (
+                          <span key={`c-${t}`} className="text-[10px] px-2 py-0.5 rounded border border-border font-medium" style={{ borderLeftWidth: '2px', borderLeftColor: '#f59e0b' }}>{t}</span>
+                        ))}
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground font-light tracking-[0.1em]">
-                      No tickers added yet. Type a symbol above and press Enter.
-                    </p>
                   )}
                 </CardContent>
               </Card>
 
               {/* Email */}
-              <Card className="border border-border shadow-sm">
-                <CardHeader className="pb-3 pt-6 px-6">
-                  <CardTitle className="text-sm font-medium tracking-[0.1em] uppercase">Recipient Email</CardTitle>
-                  <CardDescription className="text-xs font-light tracking-[0.05em]">
+              <Card className="border border-border bg-card rounded-md">
+                <CardHeader className="pb-3 pt-5 px-5">
+                  <CardTitle className="text-sm font-semibold tracking-wide uppercase">Recipient Email</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
                     Analysis reports will be delivered to this email address.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-6 pb-6">
+                <CardContent className="px-5 pb-5">
                   <div className="flex items-center gap-2">
                     <IconMail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     <Input
@@ -1307,11 +1552,11 @@ export default function Page() {
                       placeholder="your@email.com"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      className="flex-1 text-xs tracking-[0.1em] font-light"
+                      className="flex-1 text-xs font-medium bg-background rounded-md"
                     />
                   </div>
                   {emailInput && !isValidEmail(emailInput) && (
-                    <p className="text-xs text-destructive font-light tracking-[0.05em] mt-2">
+                    <p className="text-xs text-red-400 font-medium mt-2">
                       Please enter a valid email address.
                     </p>
                   )}
@@ -1319,25 +1564,25 @@ export default function Page() {
               </Card>
 
               {/* Schedule Configuration */}
-              <Card className="border border-border shadow-sm">
-                <CardHeader className="pb-3 pt-6 px-6">
-                  <CardTitle className="text-sm font-medium tracking-[0.1em] uppercase">Daily Schedule</CardTitle>
-                  <CardDescription className="text-xs font-light tracking-[0.05em]">
+              <Card className="border border-border bg-card rounded-md">
+                <CardHeader className="pb-3 pt-5 px-5">
+                  <CardTitle className="text-sm font-semibold tracking-wide uppercase">Daily Schedule</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
                     Automated analysis runs daily at 8:00 AM Eastern Time.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-6 pb-6">
+                <CardContent className="px-5 pb-5">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <p className="text-xs font-light tracking-[0.1em]">
+                      <p className="text-xs text-foreground font-medium">
                         {schedule?.cron_expression ? cronToHuman(schedule.cron_expression) : 'Every day at 8:00'} (America/New_York)
                       </p>
-                      <p className="text-xs text-muted-foreground font-light tracking-[0.05em]">
+                      <p className="text-xs text-muted-foreground">
                         Status: {schedule?.is_active ? 'Active' : 'Paused'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="schedule-toggle" className="text-xs font-light tracking-[0.1em] text-muted-foreground">
+                      <Label htmlFor="schedule-toggle" className="text-xs text-muted-foreground">
                         {schedule?.is_active ? 'Active' : 'Paused'}
                       </Label>
                       <Switch
@@ -1355,13 +1600,13 @@ export default function Page() {
               <div className="flex items-center gap-4">
                 <Button
                   onClick={saveSettings}
-                  className="text-xs tracking-[0.15em] uppercase font-normal px-8"
+                  className="text-xs tracking-wider uppercase font-medium px-8 rounded-md"
                   disabled={!!(emailInput && !isValidEmail(emailInput))}
                 >
                   Save Settings
                 </Button>
                 {settingsMsg && (
-                  <span className="text-xs text-emerald-600 font-light tracking-[0.1em] flex items-center gap-1.5">
+                  <span className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
                     <IconCheckCircle className="w-3.5 h-3.5" />
                     {settingsMsg}
                   </span>
@@ -1372,10 +1617,10 @@ export default function Page() {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border mt-16">
-          <div className="max-w-6xl mx-auto px-6 py-6">
-            <p className="text-[10px] text-muted-foreground font-light tracking-[0.15em] text-center uppercase">
-              StockPulse -- Portfolio Intelligence Platform
+        <footer className="border-t border-border mt-12">
+          <div className="max-w-7xl mx-auto px-6 py-5">
+            <p className="text-[10px] text-muted-foreground tracking-widest text-center uppercase">
+              StockPulse -- Multi-Asset Intelligence Terminal
             </p>
           </div>
         </footer>

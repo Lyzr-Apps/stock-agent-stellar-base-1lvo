@@ -5,9 +5,9 @@
       "name": "Portfolio Analysis Manager",
       "type": "manager"
     },
-    "stock_research_agent": {
+    "market_research_agent": {
       "id": "6999be3155533a893b08f90c",
-      "name": "Stock Research Agent",
+      "name": "Market Research Agent",
       "type": "sub-agent"
     },
     "email_composer_agent": {
