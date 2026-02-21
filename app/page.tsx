@@ -1048,7 +1048,8 @@ export default function Page() {
     setActiveAgentId(MANAGER_AGENT_ID)
 
     try {
-      const message = `Analyze the following instruments: ${allAssets.join(', ')}. These include stocks, forex pairs, and commodities. Send the analysis email to ${email}.`
+      const todayStr = new Date().toISOString().split('T')[0]
+      const message = `Today's date is ${todayStr}. Analyze the following instruments: ${allAssets.join(', ')}. These include stocks, forex pairs, and commodities. After completing the research, compose a professional analysis email and send it via Gmail to the recipient email address: ${email}. The email subject should be "StockPulse Daily Analysis - ${todayStr}". Make sure the Email Composer Agent sends the email to exactly this address: ${email}. Use today's date ${todayStr} for the analysis_date field.`
       const result = await callAIAgent(message, MANAGER_AGENT_ID)
 
       setActiveAgentId(null)
@@ -1056,12 +1057,17 @@ export default function Page() {
       if (result.success) {
         const data = result?.response?.result as unknown as AnalysisResult | undefined
         if (data) {
-          setLatestResult(data)
+          // Always use today's actual date to avoid stale/wrong dates from agent
+          const todayDate = new Date().toISOString().split('T')[0]
+          const reportDate = data.analysis_date && data.analysis_date.startsWith('202') ? data.analysis_date : todayDate
+          const fixedData = { ...data, analysis_date: reportDate }
+
+          setLatestResult(fixedData)
 
           const newReport: SavedReport = {
             id: `report-${Date.now()}`,
-            date: data.analysis_date ?? new Date().toISOString().split('T')[0],
-            result: data,
+            date: reportDate,
+            result: fixedData,
             expanded: false,
           }
 
@@ -1074,6 +1080,11 @@ export default function Page() {
             }
             return updated
           })
+
+          // Warn if email was not sent
+          if (!fixedData.email_sent) {
+            setAnalysisError('Analysis completed but the email may not have been delivered. Check your inbox or try running the analysis again.')
+          }
         } else {
           setAnalysisError('Received an empty response from the agent.')
         }
@@ -1356,12 +1367,22 @@ export default function Page() {
                     </Card>
                   )}
 
-                  {displayResult?.recipient && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      <IconMail className="w-3 h-3" />
-                      Report delivered to {displayResult.recipient}
-                    </p>
-                  )}
+                  {/* Email delivery status */}
+                  {displayResult?.email_sent ? (
+                    <div className="flex items-center gap-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-md">
+                      <IconCheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <p className="text-xs text-emerald-400 font-medium">
+                        Analysis email delivered to {displayResult.recipient || 'recipient'}
+                      </p>
+                    </div>
+                  ) : displayResult?.recipient ? (
+                    <div className="flex items-center gap-2 p-3 bg-amber-500/5 border border-amber-500/20 rounded-md">
+                      <IconAlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <p className="text-xs text-amber-400 font-medium">
+                        Email delivery to {displayResult.recipient} could not be confirmed. Check your inbox or run analysis again.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               )}
 
@@ -1381,7 +1402,22 @@ export default function Page() {
 
               {/* Report History */}
               <div>
-                <h2 className="text-sm font-semibold tracking-wider uppercase mb-4 text-foreground">Report History</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold tracking-wider uppercase text-foreground">Report History</h2>
+                  {reports.length > 0 && !useSampleData && (
+                    <button
+                      onClick={() => {
+                        setReports([])
+                        setLatestResult(null)
+                        try { localStorage.removeItem(LS_REPORTS_KEY) } catch { /* ignore */ }
+                      }}
+                      className="text-[10px] tracking-wider uppercase font-medium text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1.5"
+                    >
+                      <IconX className="w-3 h-3" />
+                      Clear History
+                    </button>
+                  )}
+                </div>
                 {displayReports.length === 0 ? (
                   <Card className="border border-border bg-card rounded-md">
                     <CardContent className="p-10 text-center">
